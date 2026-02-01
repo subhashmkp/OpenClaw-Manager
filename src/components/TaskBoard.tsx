@@ -12,6 +12,7 @@ export interface Task {
     title: string;
     status: TaskStatus;
     priority: TaskPriority;
+    timestamp?: string; // Optional for compatibility
 }
 
 interface TaskBoardProps {

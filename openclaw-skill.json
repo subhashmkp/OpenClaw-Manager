@@ -1,0 +1,38 @@
+{
+    "name": "openclaw-manager-integration",
+    "description": "Integration skill for OpenClaw Manager. Allows the agent to update task status in the dashboard.",
+    "tools": [
+        {
+            "name": "update_task_status",
+            "description": "Updates the status of a task. Use this IMMEDIATELY after finishing a job to notify the dashboard.",
+            "command": "node src/scripts/update_status.js --id='{{id}}' --status='{{status}}' --notes='{{notes}}'",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "description": "The unique ID of the task to update."
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "PENDING",
+                            "IN_PROGRESS",
+                            "COMPLETED",
+                            "FAILED"
+                        ],
+                        "description": "The new status of the task."
+                    },
+                    "notes": {
+                        "type": "string",
+                        "description": "Optional notes or result summary."
+                    }
+                },
+                "required": [
+                    "id",
+                    "status"
+                ]
+            }
+        }
+    ]
+}
