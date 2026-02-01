@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+:root {
+  /* Cyberpunk Palette */
+  --background: #050505; /* Deepest Black */
+  --foreground: #ccffcc; /* Pale Green/White text */
+  --neon-green: #00ff41; /* Primary Green */
+  --neon-blue: #00f3ff;
+  --neon-pink: #ff00ff;
+  --panel: #0a0a0a;
+  --panel-border: #333333;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-neon-green: var(--neon-green);
+  --color-neon-blue: var(--neon-blue);
+  --color-neon-pink: var(--neon-pink);
+  --color-panel: var(--panel);
+  --color-panel-border: var(--panel-border);
+  
+  /* Fonts - assuming Geist is setup by default in layout */
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Utilities (Tailwind v4) */
+@layer utilities {
+  .glow-text {
+    text-shadow: 0 0 5px var(--neon-green), 0 0 10px var(--neon-green);
+  }
+  
+  .glow-border {
+    box-shadow: 0 0 10px var(--neon-green);
+    border: 1px solid var(--neon-green);
+  }
+
+  .cyber-panel {
+    background-color: var(--panel);
+    border: 1px solid var(--panel-border);
+  }
+}
