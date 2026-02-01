@@ -49,9 +49,9 @@ export async function POST(request: Request) {
 
 async function triggerOpenClawAgent(taskId: string, task: string) {
     const message = `TASK_ID: ${taskId}. INSTRUCTION: ${task}. IMPORTANT: When finished, update the task status to COMPLETED.`;
-    
+
     console.log(`[OpenClaw] Sending request to Gateway...`);
-    
+
     const response = await fetch(`${OPENCLAW_GATEWAY_URL}/v1/chat/completions`, {
         method: 'POST',
         headers: {
@@ -73,12 +73,16 @@ async function triggerOpenClawAgent(taskId: string, task: string) {
 
     const result = await response.json();
     console.log(`[OpenClaw] Response received:`, JSON.stringify(result, null, 2).substring(0, 500));
-    
+
+    // Extract output text (assuming OpenAI-compatible format from OpenClaw Gateway)
+    // Adjust this path if the OpenClaw Gateway response structure differs
+    const outputText = result.choices?.[0]?.message?.content || JSON.stringify(result, null, 2);
+
     // Update task status to COMPLETED after agent finishes
     const fs = require('fs');
     const path = require('path');
     const tasksPath = path.join(process.cwd(), 'src/data/tasks.json');
-    
+
     if (fs.existsSync(tasksPath)) {
         const fileContent = fs.readFileSync(tasksPath, 'utf8');
         const tasksArr = JSON.parse(fileContent);
@@ -86,10 +90,11 @@ async function triggerOpenClawAgent(taskId: string, task: string) {
         if (taskIndex !== -1) {
             tasksArr[taskIndex].status = 'DONE';
             tasksArr[taskIndex].completedAt = new Date().toISOString();
+            tasksArr[taskIndex].output = outputText; // Save the output
             fs.writeFileSync(tasksPath, JSON.stringify(tasksArr, null, 2));
-            console.log(`[OpenClaw] Task ${taskId} marked as DONE`);
+            console.log(`[OpenClaw] Task ${taskId} marked as DONE with output saved.`);
         }
     }
-    
+
     return result;
 }
