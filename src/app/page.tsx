@@ -6,7 +6,7 @@ import ActiveAgentsList from '@/components/ActiveAgentsList';
 import LiveLogTerminal, { LogEntry } from '@/components/LiveLogTerminal';
 import TaskBoard, { Task } from '@/components/TaskBoard';
 import { motion } from 'framer-motion';
-import { Send, Command } from 'lucide-react';
+import { Send, Command, Trash2 } from 'lucide-react';
 
 export default function Dashboard() {
   const [input, setInput] = useState('');
@@ -115,6 +115,24 @@ export default function Dashboard() {
     }
   };
 
+  const handleClearTasks = async () => {
+    try {
+      const res = await fetch('/api/tasks', { method: 'DELETE' });
+      if (res.ok) {
+        setTasks([]);
+        setLogs(prev => [...prev, {
+          id: Date.now().toString(),
+          timestamp: new Date().toLocaleTimeString(),
+          sender: 'System',
+          message: 'All tasks cleared from database.',
+          type: 'success'
+        }]);
+      }
+    } catch (error) {
+      console.error('Failed to clear tasks', error);
+    }
+  };
+
   return (
     <main className="min-h-screen bg-black/90 text-foreground flex flex-col p-6 gap-6 relative overflow-x-hidden">
       {/* Background Grid Effect */}
@@ -204,6 +222,13 @@ export default function Dashboard() {
         <div className="mb-4 flex items-center gap-2 border-b border-neon-green/30 pb-2">
           <div className="h-2 w-2 bg-neon-green"></div>
           <h2 className="font-mono text-lg font-bold tracking-[0.2em] text-neon-green">MISSION OBJECTIVES</h2>
+          <button
+            onClick={handleClearTasks}
+            className="ml-auto flex items-center gap-2 px-3 py-1 bg-red-950/20 hover:bg-red-900/30 border border-red-500/30 text-red-400 text-xs font-mono uppercase tracking-widest rounded transition-all hover:shadow-[0_0_15px_rgba(255,0,0,0.2)]"
+          >
+            <Trash2 size={12} />
+            Clear All
+          </button>
         </div>
         <TaskBoard tasks={tasks} />
       </section>

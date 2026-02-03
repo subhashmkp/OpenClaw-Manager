@@ -19,3 +19,17 @@ export async function GET() {
         return NextResponse.json({ error: 'Failed to fetch tasks' }, { status: 500 });
     }
 }
+
+export async function DELETE() {
+    try {
+        const tasksPath = path.join(process.cwd(), 'src/data/tasks.json');
+
+        // Write empty array to file
+        fs.writeFileSync(tasksPath, JSON.stringify([], null, 2));
+
+        return NextResponse.json({ success: true, message: 'All tasks cleared' });
+    } catch (error) {
+        console.error('[API] Error clearing tasks:', error);
+        return NextResponse.json({ error: 'Failed to clear tasks' }, { status: 500 });
+    }
+}
