@@ -138,6 +138,24 @@ export default function Dashboard() {
     }
   };
 
+  const handleDeleteTask = async (id: string) => {
+    try {
+      const res = await fetch(`/api/tasks?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setTasks(prev => prev.filter(t => t.id !== id));
+        setLogs(prev => [...prev, {
+          id: Date.now().toString(),
+          timestamp: new Date().toLocaleTimeString(),
+          sender: 'System',
+          message: `Task ${id.slice(0, 4)} deleted.`,
+          type: 'success'
+        }]);
+      }
+    } catch (error) {
+      console.error('Failed to delete task', error);
+    }
+  };
+
   const handleClearTasks = async () => {
     try {
       const res = await fetch('/api/tasks', { method: 'DELETE' });
@@ -257,9 +275,10 @@ export default function Dashboard() {
             <Trash2 size={12} />
             Clear All
           </button>
+
         </div>
-        <TaskBoard tasks={tasks} />
+        <TaskBoard tasks={tasks} onDeleteTask={handleDeleteTask} />
       </section>
-    </main>
+    </main >
   );
 }

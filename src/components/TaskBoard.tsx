@@ -19,9 +19,10 @@ export interface Task {
 
 interface TaskBoardProps {
     tasks: Task[];
+    onDeleteTask: (id: string) => void;
 }
 
-export default function TaskBoard({ tasks }: TaskBoardProps) {
+export default function TaskBoard({ tasks, onDeleteTask }: TaskBoardProps) {
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
     const columns = [
@@ -74,14 +75,19 @@ export default function TaskBoard({ tasks }: TaskBoardProps) {
                                         )}
                                     >
                                         {/* Priority Pulse */}
-                                        {task.priority === 'HIGH' && (
-                                            <span className="absolute top-2 right-2 flex h-2 w-2">
-                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
-                                            </span>
-                                        )}
 
-                                        <h4 className="font-bold text-gray-200 text-sm group-hover:text-neon-green transition-colors">
+
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDeleteTask(task.id);
+                                            }}
+                                            className="absolute top-2 right-2 text-gray-500 hover:text-red-500 transition-colors z-10"
+                                        >
+                                            <X size={14} />
+                                        </button>
+
+                                        <h4 className="font-bold text-gray-200 text-sm group-hover:text-neon-green transition-colors pr-6">
                                             {task.title}
                                         </h4>
 
