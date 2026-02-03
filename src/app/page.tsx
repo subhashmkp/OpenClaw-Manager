@@ -15,6 +15,29 @@ export default function Dashboard() {
     { id: '1', timestamp: '10:00:01', sender: 'System', message: 'OpenClaw Manager initialized.', type: 'success' },
   ]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [systemStats, setSystemStats] = useState({
+    cpu: 0,
+    memory: { used: 0, total: 0, percentage: 0 }
+  });
+
+  // Poll for system stats
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await fetch('/api/system');
+        if (res.ok) {
+          const data = await res.json();
+          setSystemStats(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch system stats', error);
+      }
+    };
+
+    fetchStats();
+    const interval = setInterval(fetchStats, 3000); // Update every 3 seconds
+    return () => clearInterval(interval);
+  }, []);
 
   // Poll for tasks
   useEffect(() => {
@@ -162,23 +185,28 @@ export default function Dashboard() {
           <div className="w-full space-y-2 p-4 rounded-lg border border-neon-green/10 bg-black/40 backdrop-blur-sm">
             <div className="flex justify-between text-sm">
               <span className="text-gray-400">CPU Usage</span>
-              <span className="text-neon-green">34%</span>
+              <span className="text-neon-green">{systemStats.cpu}%</span>
             </div>
             <div className="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
               <motion.div
                 className="h-full bg-neon-green"
-                initial={{ width: "30%" }}
-                animate={{ width: ["30%", "45%", "34%"] }}
-                transition={{ duration: 2, repeat: Infinity }}
+                animate={{ width: `${systemStats.cpu}%` }}
+                transition={{ duration: 0.5 }}
               />
             </div>
 
             <div className="flex justify-between text-sm mt-2">
               <span className="text-gray-400">Memory</span>
-              <span className="text-neon-blue">12GB / 64GB</span>
+              <span className="text-neon-blue">
+                {(systemStats.memory.used / (1024 ** 3)).toFixed(1)}GB / {(systemStats.memory.total / (1024 ** 3)).toFixed(0)}GB
+              </span>
             </div>
             <div className="w-full bg-gray-800 h-1 rounded-full overflow-hidden">
-              <div className="h-full bg-neon-blue w-[20%]" />
+              <motion.div
+                className="h-full bg-neon-blue"
+                animate={{ width: `${systemStats.memory.percentage}%` }}
+                transition={{ duration: 0.5 }}
+              />
             </div>
           </div>
         </div>
