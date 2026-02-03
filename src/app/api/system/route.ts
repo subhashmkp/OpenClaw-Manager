@@ -43,13 +43,47 @@ export async function GET() {
         const usedMem = totalMem - freeMem;
         const memPercentage = Math.round((usedMem / totalMem) * 100);
 
+        // Check Gateway Status
+        let gatewayStatus = 'OFFLINE';
+        try {
+            // Short timeout to verify port is open
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 200);
+
+            // We just want to see if it connects. 
+            // Since it's a raw TCP socket likely, fetch might fail protocol but confirm connection?
+            // Actually the user said "OpenClaw gateway". Typically http.
+            // If it's pure TCP, fetch will fail but we can try net.Socket if this was node.
+            // But this is Next.js edge/node runtime.
+            // Let's assume HTTP first or just simple fetch. 
+            // If it fails with ECONNREFUSED it's offline. 
+            // If it fails with Parse Error (protocol mismatch), it's ONLINE (port is open).
+            await fetch('http://127.0.0.1:18789', {
+                signal: controller.signal,
+                method: 'HEAD' // Lightweight
+            }).then(() => {
+                gatewayStatus = 'ONLINE';
+            }).catch((err) => {
+                if (err.cause?.code === 'ECONNREFUSED') {
+                    gatewayStatus = 'OFFLINE';
+                } else {
+                    // Any other error means something is listening there (e.g. protocol error)
+                    gatewayStatus = 'ONLINE';
+                }
+            });
+            clearTimeout(timeoutId);
+        } catch (e) {
+            // Ignore
+        }
+
         return NextResponse.json({
             cpu: avgCpu,
             memory: {
                 used: usedMem,
                 total: totalMem,
                 percentage: memPercentage
-            }
+            },
+            gateway: gatewayStatus
         });
     } catch (error) {
         console.error('[API] Error getting system stats:', error);

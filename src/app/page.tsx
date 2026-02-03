@@ -17,7 +17,8 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [systemStats, setSystemStats] = useState({
     cpu: 0,
-    memory: { used: 0, total: 0, percentage: 0 }
+    memory: { used: 0, total: 0, percentage: 0 },
+    gateway: 'OFFLINE'
   });
 
   // Poll for system stats
@@ -182,14 +183,17 @@ export default function Dashboard() {
       {/* Header */}
       <header className="relative z-10 flex items-center justify-between border-b border-neon-green/20 pb-4">
         <div className="flex items-center gap-3">
-          <div className="h-3 w-3 rounded-full bg-neon-green shadow-[0_0_10px_#00ff41]" />
+          <div className={`h-3 w-3 rounded-full transition-all duration-500 ${systemStats.gateway === 'ONLINE' ? 'bg-neon-green shadow-[0_0_10px_#00ff41]' : 'bg-gray-800'
+            }`} />
           <h1 className="text-2xl font-bold tracking-tighter uppercase font-mono glow-text">
             OpenClaw <span className="text-neon-green">Manager</span>
           </h1>
         </div>
         <div className="flex items-center gap-4 text-xs font-mono text-neon-green/70">
           <span>v1.0.0</span>
-          <span>SECURE_CONN_ESTABLISHED</span>
+          <span className={systemStats.gateway === 'ONLINE' ? 'text-neon-green' : 'text-gray-500'}>
+            {systemStats.gateway === 'ONLINE' ? 'SECURE_CONN_ESTABLISHED' : 'GATEWAY_OFFLINE'}
+          </span>
         </div>
       </header>
 
