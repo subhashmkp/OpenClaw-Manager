@@ -6,7 +6,7 @@ import ActiveAgentsList from '@/components/ActiveAgentsList';
 import LiveLogTerminal, { LogEntry } from '@/components/LiveLogTerminal';
 import TaskBoard, { Task } from '@/components/TaskBoard';
 import { motion } from 'framer-motion';
-import { Send, Command, Trash2 } from 'lucide-react';
+import { Send, Command, Trash2, Activity } from 'lucide-react';
 
 export default function Dashboard() {
   const [input, setInput] = useState('');
@@ -272,13 +272,30 @@ export default function Dashboard() {
         <div className="mb-4 flex items-center gap-2 border-b border-neon-green/30 pb-2">
           <div className="h-2 w-2 bg-neon-green"></div>
           <h2 className="font-mono text-lg font-bold tracking-[0.2em] text-neon-green">MISSION OBJECTIVES</h2>
-          <button
-            onClick={handleClearTasks}
-            className="ml-auto flex items-center gap-2 px-3 py-1 bg-red-950/20 hover:bg-red-900/30 border border-red-500/30 text-red-400 text-xs font-mono uppercase tracking-widest rounded transition-all hover:shadow-[0_0_15px_rgba(255,0,0,0.2)]"
-          >
-            <Trash2 size={12} />
-            Clear All
-          </button>
+          <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={async () => {
+                const res = await fetch('/api/agent/process-all', { method: 'POST' });
+                if (res.ok) {
+                  // Refresh tasks
+                  const data = await res.json();
+                  // Maybe show a toast or log
+                  console.log(data.message);
+                }
+              }}
+              className="flex items-center gap-2 px-3 py-1 bg-neon-green/10 hover:bg-neon-green/20 border border-neon-green/30 text-neon-green text-xs font-mono uppercase tracking-widest rounded transition-all hover:shadow-[0_0_15px_rgba(0,255,65,0.2)]"
+            >
+              <Activity size={12} />
+              Process Pending
+            </button>
+            <button
+              onClick={handleClearTasks}
+              className="flex items-center gap-2 px-3 py-1 bg-red-950/20 hover:bg-red-900/30 border border-red-500/30 text-red-400 text-xs font-mono uppercase tracking-widest rounded transition-all hover:shadow-[0_0_15px_rgba(255,0,0,0.2)]"
+            >
+              <Trash2 size={12} />
+              Clear All
+            </button>
+          </div>
 
         </div>
         <TaskBoard tasks={tasks} onDeleteTask={handleDeleteTask} />

@@ -48,9 +48,38 @@ export async function POST(request: Request) {
 }
 
 async function triggerOpenClawAgent(taskId: string, task: string) {
-    const message = `TASK_ID: ${taskId}. INSTRUCTION: ${task}. IMPORTANT: When finished, update the task status to COMPLETED.`;
+    let workspacePath = '';
+    try {
+        const fs = require('fs');
+        const os = require('os');
+        const path = require('path');
+        const configPath = path.join(os.homedir(), '.openclaw', 'openclaw.json');
+        if (fs.existsSync(configPath)) {
+            const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+            workspacePath = config.agents?.defaults?.workspace || '';
+        }
+    } catch (e) {
+        // Ignore config read errors
+    }
 
-    console.log(`[OpenClaw] Sending request to Gateway...`);
+    const contextMsg = workspacePath ? ` WORKING_DIRECTORY: "${workspacePath}".` : '';
+    const message = `TASK_ID: ${taskId}. INSTRUCTION: ${task}.${contextMsg} IMPORTANT: Use the specified working directory for all file operations. When finished, update the task status to COMPLETED.`;
+
+    console.log(`[OpenClaw] Sending request to Gateway... Context: ${workspacePath}`);
+
+    // Inject tools
+    let tools = [];
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const skillPath = path.join(process.cwd(), 'openclaw-skill.json');
+        if (fs.existsSync(skillPath)) {
+            const skillConfig = JSON.parse(fs.readFileSync(skillPath, 'utf8'));
+            tools = skillConfig.tools || [];
+        }
+    } catch (e) {
+        console.error('[OpenClaw] Failed to load tools:', e);
+    }
 
     const response = await fetch(`${OPENCLAW_GATEWAY_URL}/v1/chat/completions`, {
         method: 'POST',
@@ -62,6 +91,7 @@ async function triggerOpenClawAgent(taskId: string, task: string) {
         body: JSON.stringify({
             model: 'openclaw',
             messages: [{ role: 'user', content: message }],
+            tools: tools, // Pass tools to the agent
             stream: false
         })
     });
